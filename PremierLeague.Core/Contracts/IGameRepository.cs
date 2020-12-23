@@ -10,5 +10,6 @@ namespace PremierLeague.Core.Contracts
 		Task<Game> GetGameByIdAsync(int id);
 		Task<IEnumerable<Game>> GetAllWithTeamsAsync();
 		Task AddGameAsync(Game tempGame);
+		Task<IEnumerable<Game>> GetGameByRoundAsync(int round);
 	}
 }

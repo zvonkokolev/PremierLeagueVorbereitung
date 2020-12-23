@@ -23,6 +23,7 @@ namespace PremierLeague.Wpf.ViewModels
 		private int _round;
 		private Team _selectedHomeTeam;
 		private Team _selectedGuestTeam;
+		private string _message;
 
 		public ObservableCollection<Game> Games { get; private set; }
 		public ObservableCollection<Team> Teams { get; private set; }
@@ -35,6 +36,7 @@ namespace PremierLeague.Wpf.ViewModels
 			{
 				_game = value;
 				OnPropertyChanged(nameof(Game));
+				Validate();
 			}
 		}
 		public string HomeTeam
@@ -44,6 +46,7 @@ namespace PremierLeague.Wpf.ViewModels
 			{
 				_homeTeam = value;
 				OnPropertyChanged(nameof(HomeTeam));
+				Validate();
 			}
 		}
 		public string GuestTeam
@@ -53,6 +56,7 @@ namespace PremierLeague.Wpf.ViewModels
 			{
 				_guestTeam = value;
 				OnPropertyChanged(nameof(GuestTeam));
+				Validate();
 			}
 		}
 		public int HomeGoals
@@ -80,6 +84,7 @@ namespace PremierLeague.Wpf.ViewModels
 			{
 				_round = value;
 				OnPropertyChanged(nameof(Round));
+				Validate();
 			}
 		}
 		public Team SelectedHomeTeam
@@ -89,6 +94,7 @@ namespace PremierLeague.Wpf.ViewModels
 			{
 				_selectedHomeTeam = value;
 				OnPropertyChanged(nameof(SelectedHomeTeam));
+				Validate();
 			}
 		}
 		public Team SelectedGuestTeam
@@ -98,6 +104,16 @@ namespace PremierLeague.Wpf.ViewModels
 			{
 				_selectedGuestTeam = value;
 				OnPropertyChanged(nameof(SelectedGuestTeam));
+				Validate();
+			}
+		}
+		public string Message 
+		{
+			get => _message;
+			set
+			{
+				_message = value;
+				OnPropertyChanged();
 			}
 		}
 		public RelayCommand CmdSaveGame
@@ -121,7 +137,7 @@ namespace PremierLeague.Wpf.ViewModels
 
 		public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		{
-			throw new NotImplementedException();
+			yield return ValidationResult.Success;
 		}
 		private async Task LoadDataAsync()
 		{
@@ -131,8 +147,8 @@ namespace PremierLeague.Wpf.ViewModels
 
 			Games = new ObservableCollection<Game>(games);
 			Teams = new ObservableCollection<Team>(teams);
-			SelectedHomeTeam = Teams.FirstOrDefault();
-			SelectedGuestTeam = Teams.FirstOrDefault();
+			SelectedHomeTeam = Teams.First();
+			SelectedGuestTeam = Teams.First();
 		}
 		public static async Task<BaseViewModel> CreateAsync(IWindowController controller)
 		{
@@ -159,10 +175,12 @@ namespace PremierLeague.Wpf.ViewModels
 					}
 					catch (Exception e)
 					{
+						Message = e.Message;
 						throw new ValidationException(e.Message);
 					}
 				},
-				canExecute: _ => Game != null)
+				canExecute: _ => SelectedHomeTeam.Id != SelectedGuestTeam.Id
+					&& Round > 0 && Round < 39)
 				;
 		}
 	}

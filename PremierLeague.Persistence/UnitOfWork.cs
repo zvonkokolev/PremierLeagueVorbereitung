@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PremierLeague.Core.Contracts;
 using PremierLeague.Core.Entities;
-using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,7 +41,14 @@ namespace PremierLeague.Persistence
 				 .Select(e => e.Entity);
 			foreach (var entity in entities)
 			{
-				await ValidateEntityAsync(entity);
+				try
+				{
+					await ValidateEntityAsync(entity);
+				}
+				catch (ValidationException e)
+				{
+					throw new ValidationException(e.Message);
+				}
 			}
 			await _dbContext.SaveChangesAsync();
 		}
@@ -55,20 +62,23 @@ namespace PremierLeague.Persistence
 		{
 			if (entity is Game game)
 			{
+				List<string> viewObjects = new List<string>();
 				if (await _dbContext.Games
-					.Include(ht => ht.HomeTeam)
-					.Include(gt => gt.GuestTeam)
-					.AnyAsync(g => (g.HomeTeam.Id == game.HomeTeam.Id && g.Round == game.Round)
-					|| (g.GuestTeam.Id == game.GuestTeam.Id && g.Round == game.Round)))
+					.AnyAsync(g => (g.Id != game.Id && g.Round == game.Round)
+					&& (g.HomeTeam.Name == game.HomeTeam.Name || g.GuestTeam.Name == game.HomeTeam.Name)))
 				{
-					throw new ValidationException($"Der Team hat bereits in dieser Runde gespielt");
+					viewObjects.Add("SelectedHomeTeam");
 				}
-				//int res = _dbContext.Games.Count();
-				//int teamsAnzahl = _dbContext.Games.Count();
-				//if (res < 0 || res > ((teamsAnzahl - 1) * teamsAnzahl) - 1)
-				//{
-				//	throw new ValidationException($"Rundenanzahl liegt nicht in gültigen Bereich");
-				//}
+				if (await _dbContext.Games
+					.AnyAsync(g => (g.Id != game.Id && g.Round == game.Round)
+					&& (g.HomeTeam.Name == game.GuestTeam.Name || g.GuestTeam.Name == game.HomeTeam.Name)))
+				{
+					viewObjects.Add("SelectedGuestTeam");
+				}
+				if(viewObjects.Count > 0)
+				{
+					throw new ValidationException($"Der Team hat bereits in dieser Runde gespielt", null, viewObjects);
+				}
 			}
 			//if (entity is Team team)
 			//{

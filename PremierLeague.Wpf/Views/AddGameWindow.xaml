@@ -15,6 +15,7 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -49,5 +50,7 @@
                 Command="{Binding CmdSaveGame, UpdateSourceTrigger=PropertyChanged}">
             SAVE
         </Button>
+        <TextBlock Text="{Binding Path=Message, UpdateSourceTrigger=PropertyChanged}"
+                   Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"></TextBlock>
     </Grid>
 </controls:MetroWindow>

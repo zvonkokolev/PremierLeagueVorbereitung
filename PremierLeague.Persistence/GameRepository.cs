@@ -36,5 +36,13 @@ namespace PremierLeague.Persistence
 			=> await _dbContext.Games
 			.AddAsync(tempGame)
 			;
+
+		public async Task<IEnumerable<Game>> GetGameByRoundAsync(int round)
+			=> await _dbContext.Games
+			.Include(g => g.HomeTeam)
+			.Include(g => g.GuestTeam)
+			.Where(g => g.Round == round)
+			.ToListAsync()
+			;
 	}
 }
